@@ -13,8 +13,6 @@ class HeartbeatGridView: ScreenSaverView {
     
     // MARK: - Initialization
     override init?(frame: NSRect, isPreview: Bool) {
-        squareCountX = frame.width / squareSize.width
-        
         super.init(frame: frame, isPreview: isPreview)
     }
     
@@ -22,8 +20,6 @@ class HeartbeatGridView: ScreenSaverView {
     required init?(coder decoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    var squareCountX: CGFloat
     
     var offsetX: CGFloat = 0
     var offsetY: CGFloat = 0
