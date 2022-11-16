@@ -7,14 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2EE766882920F1F1005BE8AC /* HeartbeatGridView.h in Headers */ = {isa = PBXBuildFile; fileRef = 2EE766872920F1F1005BE8AC /* HeartbeatGridView.h */; };
-		2EE7668A2920F1F1005BE8AC /* HeartbeatGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2EE766892920F1F1005BE8AC /* HeartbeatGridView.m */; };
+		2EE766922920F3DA005BE8AC /* HeartbeatGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EE766912920F3DA005BE8AC /* HeartbeatGridView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		2EE766842920F1F1005BE8AC /* HeartbeatGrid.saver */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HeartbeatGrid.saver; sourceTree = BUILT_PRODUCTS_DIR; };
-		2EE766872920F1F1005BE8AC /* HeartbeatGridView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HeartbeatGridView.h; sourceTree = "<group>"; };
-		2EE766892920F1F1005BE8AC /* HeartbeatGridView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HeartbeatGridView.m; sourceTree = "<group>"; };
+		2EE766902920F3D9005BE8AC /* HeartbeatGrid-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HeartbeatGrid-Bridging-Header.h"; sourceTree = "<group>"; };
+		2EE766912920F3DA005BE8AC /* HeartbeatGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartbeatGridView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,8 +46,8 @@
 		2EE766862920F1F1005BE8AC /* HeartbeatGrid */ = {
 			isa = PBXGroup;
 			children = (
-				2EE766872920F1F1005BE8AC /* HeartbeatGridView.h */,
-				2EE766892920F1F1005BE8AC /* HeartbeatGridView.m */,
+				2EE766912920F3DA005BE8AC /* HeartbeatGridView.swift */,
+				2EE766902920F3D9005BE8AC /* HeartbeatGrid-Bridging-Header.h */,
 			);
 			path = HeartbeatGrid;
 			sourceTree = "<group>";
@@ -60,7 +59,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2EE766882920F1F1005BE8AC /* HeartbeatGridView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,6 +94,7 @@
 				TargetAttributes = {
 					2EE766832920F1F1005BE8AC = {
 						CreatedOnToolsVersion = 14.1;
+						LastSwiftMigration = 1410;
 					};
 				};
 			};
@@ -132,7 +131,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2EE7668A2920F1F1005BE8AC /* HeartbeatGridView.m in Sources */,
+				2EE766922920F3DA005BE8AC /* HeartbeatGridView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,6 +188,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_NSPrincipalClass = HeartbeatGrid.HeartbeatGridView;
 				MACOSX_DEPLOYMENT_TARGET = 12.6;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -241,6 +241,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_NSPrincipalClass = HeartbeatGrid.HeartbeatGridView;
 				MACOSX_DEPLOYMENT_TARGET = 12.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -251,6 +252,7 @@
 		2EE7668E2920F1F1005BE8AC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -259,10 +261,18 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSPrincipalClass = HeartbeatGridView;
 				INSTALL_PATH = "$(HOME)/Library/Screen Savers";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = zone.callum.HeartbeatGrid;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "HeartbeatGrid/HeartbeatGrid-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				WRAPPER_EXTENSION = saver;
 			};
 			name = Debug;
@@ -270,6 +280,7 @@
 		2EE7668F2920F1F1005BE8AC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -278,10 +289,17 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSPrincipalClass = HeartbeatGridView;
 				INSTALL_PATH = "$(HOME)/Library/Screen Savers";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = zone.callum.HeartbeatGrid;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "HeartbeatGrid/HeartbeatGrid-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				WRAPPER_EXTENSION = saver;
 			};
 			name = Release;
