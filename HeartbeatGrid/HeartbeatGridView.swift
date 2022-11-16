@@ -31,7 +31,7 @@ class HeartbeatGridView: ScreenSaverView {
     var maxOffsetX: CGFloat = CGFloat(Int.max)
     var maxOffsetY: CGFloat = CGFloat(Int.max)
     
-    let squareSize = CGSize(width: 128, height: 128)
+    let squareSize = CGSize(width: 64, height: 64)
     
     // MARK: - Lifecycle
     override func draw(_ rect: NSRect) {
@@ -60,7 +60,7 @@ class HeartbeatGridView: ScreenSaverView {
     private func drawSquare(_ rect: NSRect, _ x: CGFloat, _ y: CGFloat) {
         let isForgroundSquare = ((x + y) / squareSize.width).truncatingRemainder(dividingBy: 2).isZero
         
-        let overflow: CGFloat = isForgroundSquare ? 6 : 0
+        let overflow: CGFloat = isForgroundSquare ? 2 : 0
         let overflowOffset = overflow / 2
         
         let square = NSRect(
@@ -77,8 +77,8 @@ class HeartbeatGridView: ScreenSaverView {
         
         if (isForgroundSquare) {
             let bezelSize = squareSize.width / 16
-            let nwColor: NSColor = .systemBlue.withSystemEffect(.deepPressed).withAlphaComponent(0.9)
-            let seColor: NSColor = .systemBlue.withSystemEffect(.pressed).withAlphaComponent(0.8)
+            let nwColor: NSColor = .init(white: 0.95, alpha: 0.8)
+            let seColor: NSColor = .systemBlue.withSystemEffect(.pressed).withAlphaComponent(0.9)
             
             // Bottom
             drawBezel(
