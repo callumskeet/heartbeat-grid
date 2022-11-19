@@ -27,7 +27,7 @@ class HeartbeatGridView: ScreenSaverView {
     var maxOffsetX: CGFloat = CGFloat(Int.max)
     var maxOffsetY: CGFloat = CGFloat(Int.max)
     
-    let squareSize = NSSize(width: 64, height: 64)
+    let squareSize: CGFloat = 64
     let gridSize = (width: 8, height: 6)
     
     // MARK: - Lifecycle
@@ -35,14 +35,24 @@ class HeartbeatGridView: ScreenSaverView {
         maxOffsetX = rect.width
         maxOffsetY = rect.height
         
-        drawGrid(rect)
+        drawCheckerboard { [weak self] (origin, isForeground) in
+            if (!isForeground) {
+                self?.drawSquare(origin)
+            }
+        }
+        
+        drawCheckerboard { [weak self] (origin, isForeground) in
+            if (isForeground) {
+                self?.drawBezeledSquare(origin)
+            }
+        }
     }
     
     override func animateOneFrame() {
         super.animateOneFrame()
         
-        offsetX = offsetX - 4
-        offsetY = offsetY - 4
+        offsetX = offsetX - 1
+        offsetY = offsetY - 1
         
         setNeedsDisplay(bounds)
     }
@@ -51,8 +61,8 @@ class HeartbeatGridView: ScreenSaverView {
         let square = NSRect(
             x: origin.x,
             y: origin.y,
-            width: squareSize.width,
-            height: squareSize.height
+            width: squareSize,
+            height: squareSize
         )
         
         NSColor.systemMint.setFill()
@@ -66,14 +76,14 @@ class HeartbeatGridView: ScreenSaverView {
         let square = NSRect(
             x: origin.x - overflowOffset,
             y: origin.y - overflowOffset,
-            width: squareSize.width + overflow,
-            height: squareSize.height + overflow
+            width: squareSize + overflow,
+            height: squareSize + overflow
         )
         
         NSColor.systemCyan.setFill()
         square.fill()
         
-        let bezelSize = squareSize.width / 16
+        let bezelSize = squareSize / 16
         let nwColor: NSColor = .init(white: 0.95, alpha: 0.8)
         let seColor: NSColor = .systemBlue.withSystemEffect(.pressed).withAlphaComponent(0.9)
         
@@ -88,16 +98,16 @@ class HeartbeatGridView: ScreenSaverView {
         drawBezel(
             x: origin.x - overflowOffset,
             y: origin.y - overflowOffset,
-            width: squareSize.width + overflow,
+            width: squareSize + overflow,
             height: bezelSize + overflow,
             color: seColor
         )
         // Right
         drawBezel(
-            x: origin.x - bezelSize + squareSize.width - overflowOffset,
+            x: origin.x - bezelSize + squareSize - overflowOffset,
             y: origin.y - overflowOffset,
             width: bezelSize + overflow,
-            height: squareSize.height + overflow,
+            height: squareSize + overflow,
             color: seColor
         )
         // Left
@@ -105,47 +115,35 @@ class HeartbeatGridView: ScreenSaverView {
             x: origin.x - overflowOffset,
             y: origin.y - overflowOffset,
             width: bezelSize + overflow,
-            height: squareSize.height + overflow,
+            height: squareSize + overflow,
             color: nwColor
         )
         // Top
         drawBezel(
             x: origin.x - overflowOffset,
-            y: origin.y - bezelSize + squareSize.height - overflowOffset,
-            width: squareSize.width + overflow,
+            y: origin.y - bezelSize + squareSize - overflowOffset,
+            width: squareSize + overflow,
             height: bezelSize + overflow,
             color: nwColor
         )
     }
     
-    private func drawGrid(_ rect: NSRect) {
-        func getIsForegroundSquare(_ x: Int, _ y: Int) -> Bool {
-            (x + y).isMultiple(of: 2)
+    private func drawCheckerboard(draw: (_ origin: NSPoint, _ isLocationEven: Bool) -> Void) {
+        func getIsLocationEven(_ row: Int, _ col: Int) -> Bool {
+            (row + col).isMultiple(of: 2)
         }
         
-        func getOrigin(_ x: Int, _ y: Int) -> NSPoint {
-            NSPoint(x: Double(x) * squareSize.width, y: Double(y) * squareSize.height)
+        func getOrigin(_ row: Int, _ col: Int) -> NSPoint {
+            let x = Double(row) * squareSize
+            let y = Double(col) * squareSize
+            return NSPoint(x: x, y: y)
         }
         
-        for x in 0..<gridSize.width {
-            for y in 0..<gridSize.height {
-                let origin = getOrigin(x, y)
-                let isForgroundSquare = getIsForegroundSquare(x, y)
-                
-                if (!isForgroundSquare) {
-                    drawSquare(origin)
-                }
-            }
-        }
-        
-        for x in 0..<gridSize.width {
-            for y in 0..<gridSize.height {
-                let origin = getOrigin(x, y)
-                let isForgroundSquare = getIsForegroundSquare(x, y)
-                
-                if (isForgroundSquare) {
-                    drawBezeledSquare(origin)
-                }
+        for col in 0..<gridSize.width {
+            for row in 0..<gridSize.height {
+                let origin = getOrigin(col, row)
+                let isEven = getIsLocationEven(col, row)
+                draw(origin, isEven)
             }
         }
     }
