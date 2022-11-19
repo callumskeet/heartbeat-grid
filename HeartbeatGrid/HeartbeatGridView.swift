@@ -10,7 +10,6 @@ import ScreenSaver
 import AppKit
 
 class HeartbeatGridView: ScreenSaverView {
-    
     // MARK: - Initialization
     override init?(frame: NSRect, isPreview: Bool) {
         super.init(frame: frame, isPreview: isPreview)
@@ -24,16 +23,12 @@ class HeartbeatGridView: ScreenSaverView {
     var offsetX: CGFloat = 0
     var offsetY: CGFloat = 0
     
-    var maxOffsetX: CGFloat = CGFloat(Int.max)
-    var maxOffsetY: CGFloat = CGFloat(Int.max)
-    
     let squareSize: CGFloat = 64
-    let gridSize = (width: 8, height: 6)
+    var gridSize: (width: Int, height: Int)!
     
     // MARK: - Lifecycle
     override func draw(_ rect: NSRect) {
-        maxOffsetX = rect.width
-        maxOffsetY = rect.height
+        gridSize = (width: Int(rect.width / squareSize) + 2, height: Int(rect.height / squareSize) + 2)
         
         drawCheckerboard { [weak self] (origin, isForeground) in
             if (!isForeground) {
@@ -51,8 +46,8 @@ class HeartbeatGridView: ScreenSaverView {
     override func animateOneFrame() {
         super.animateOneFrame()
         
-        offsetX = offsetX - 1
-        offsetY = offsetY - 1
+        offsetX = (offsetX - 1).truncatingRemainder(dividingBy: squareSize)
+        offsetY = (offsetY - 1).truncatingRemainder(dividingBy: squareSize)
         
         setNeedsDisplay(bounds)
     }
@@ -136,7 +131,7 @@ class HeartbeatGridView: ScreenSaverView {
         func getOrigin(_ row: Int, _ col: Int) -> NSPoint {
             let x = Double(row) * squareSize
             let y = Double(col) * squareSize
-            return NSPoint(x: x, y: y)
+            return NSPoint(x: x + offsetX, y: y + offsetY)
         }
         
         for col in 0..<gridSize.width {
