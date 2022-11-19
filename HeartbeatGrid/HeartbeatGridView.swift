@@ -27,7 +27,8 @@ class HeartbeatGridView: ScreenSaverView {
     var maxOffsetX: CGFloat = CGFloat(Int.max)
     var maxOffsetY: CGFloat = CGFloat(Int.max)
     
-    let squareSize = CGSize(width: 64, height: 64)
+    let squareSize = NSSize(width: 64, height: 64)
+    let gridSize = (width: 8, height: 6)
     
     // MARK: - Lifecycle
     override func draw(_ rect: NSRect) {
@@ -40,92 +41,110 @@ class HeartbeatGridView: ScreenSaverView {
     override func animateOneFrame() {
         super.animateOneFrame()
         
-        offsetX = (offsetX - 4).truncatingRemainder(dividingBy: maxOffsetX)
-        offsetY = (offsetY - 4).truncatingRemainder(dividingBy: maxOffsetX)
+        offsetX = offsetX - 4
+        offsetY = offsetY - 4
         
         setNeedsDisplay(bounds)
     }
     
-    private func drawBezel(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat, color: NSColor) {
-        let bezel = NSRect(x: x, y: y, width: width, height: height)
+    private func drawSquare(_ origin: NSPoint) {
+        let square = NSRect(
+            x: origin.x,
+            y: origin.y,
+            width: squareSize.width,
+            height: squareSize.height
+        )
         
-        color.setFill()
-        bezel.fill()
+        NSColor.systemMint.setFill()
+        square.fill()
     }
     
-    private func drawSquare(_ rect: NSRect, _ x: CGFloat, _ y: CGFloat) {
-        let isForgroundSquare = ((x + y) / squareSize.width).truncatingRemainder(dividingBy: 2).isZero
-        
-        let overflow: CGFloat = isForgroundSquare ? 2 : 0
+    private func drawBezeledSquare(_ origin: NSPoint) -> Void {
+        let overflow: CGFloat = 2
         let overflowOffset = overflow / 2
         
         let square = NSRect(
-            x: x - overflowOffset,
-            y: y - overflowOffset,
+            x: origin.x - overflowOffset,
+            y: origin.y - overflowOffset,
             width: squareSize.width + overflow,
             height: squareSize.height + overflow
         )
         
-        let color: NSColor = isForgroundSquare ? .systemCyan : .systemMint
-        
-        color.setFill()
+        NSColor.systemCyan.setFill()
         square.fill()
         
-        if (isForgroundSquare) {
-            let bezelSize = squareSize.width / 16
-            let nwColor: NSColor = .init(white: 0.95, alpha: 0.8)
-            let seColor: NSColor = .systemBlue.withSystemEffect(.pressed).withAlphaComponent(0.9)
+        let bezelSize = squareSize.width / 16
+        let nwColor: NSColor = .init(white: 0.95, alpha: 0.8)
+        let seColor: NSColor = .systemBlue.withSystemEffect(.pressed).withAlphaComponent(0.9)
+        
+        func drawBezel(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat, color: NSColor) {
+            let bezel = NSRect(x: x, y: y, width: width, height: height)
             
-            // Bottom
-            drawBezel(
-                x: x - overflowOffset,
-                y: y - overflowOffset,
-                width: squareSize.width + overflow,
-                height: bezelSize + overflow,
-                color: seColor
-            )
-            // Right
-            drawBezel(
-                x: x - bezelSize + squareSize.width - overflowOffset,
-                y: y - overflowOffset,
-                width: bezelSize + overflow,
-                height: squareSize.height + overflow,
-                color: seColor
-            )
-            // Left
-            drawBezel(
-                x: x - overflowOffset,
-                y: y - overflowOffset,
-                width: bezelSize + overflow,
-                height: squareSize.height + overflow,
-                color: nwColor
-            )
-            // Top
-            drawBezel(
-                x: x - overflowOffset,
-                y: y - bezelSize + squareSize.height - overflowOffset,
-                width: squareSize.width + overflow,
-                height: bezelSize + overflow,
-                color: nwColor
-            )
+            color.setFill()
+            bezel.fill()
         }
+        
+        // Bottom
+        drawBezel(
+            x: origin.x - overflowOffset,
+            y: origin.y - overflowOffset,
+            width: squareSize.width + overflow,
+            height: bezelSize + overflow,
+            color: seColor
+        )
+        // Right
+        drawBezel(
+            x: origin.x - bezelSize + squareSize.width - overflowOffset,
+            y: origin.y - overflowOffset,
+            width: bezelSize + overflow,
+            height: squareSize.height + overflow,
+            color: seColor
+        )
+        // Left
+        drawBezel(
+            x: origin.x - overflowOffset,
+            y: origin.y - overflowOffset,
+            width: bezelSize + overflow,
+            height: squareSize.height + overflow,
+            color: nwColor
+        )
+        // Top
+        drawBezel(
+            x: origin.x - overflowOffset,
+            y: origin.y - bezelSize + squareSize.height - overflowOffset,
+            width: squareSize.width + overflow,
+            height: bezelSize + overflow,
+            color: nwColor
+        )
     }
     
     private func drawGrid(_ rect: NSRect) {
-        for x in stride(from: 0, to: rect.width, by: squareSize.width) {
-            for y in stride(from: 0, to: rect.width, by: squareSize.width) {
-                let isForegroundSquare = ((x + y) / squareSize.width).truncatingRemainder(dividingBy: 2).isZero
-                if (!isForegroundSquare) {
-                    drawSquare(rect, x, y)
+        func getIsForegroundSquare(_ x: Int, _ y: Int) -> Bool {
+            (x + y).isMultiple(of: 2)
+        }
+        
+        func getOrigin(_ x: Int, _ y: Int) -> NSPoint {
+            NSPoint(x: Double(x) * squareSize.width, y: Double(y) * squareSize.height)
+        }
+        
+        for x in 0..<gridSize.width {
+            for y in 0..<gridSize.height {
+                let origin = getOrigin(x, y)
+                let isForgroundSquare = getIsForegroundSquare(x, y)
+                
+                if (!isForgroundSquare) {
+                    drawSquare(origin)
                 }
             }
         }
         
-        for x in stride(from: 0, to: rect.width, by: squareSize.width) {
-            for y in stride(from: 0, to: rect.width, by: squareSize.width) {
-                let isForegroundSquare = ((x + y) / squareSize.width).truncatingRemainder(dividingBy: 2).isZero
-                if (isForegroundSquare) {
-                    drawSquare(rect, x, y)
+        for x in 0..<gridSize.width {
+            for y in 0..<gridSize.height {
+                let origin = getOrigin(x, y)
+                let isForgroundSquare = getIsForegroundSquare(x, y)
+                
+                if (isForgroundSquare) {
+                    drawBezeledSquare(origin)
                 }
             }
         }
