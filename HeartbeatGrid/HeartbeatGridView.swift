@@ -11,8 +11,11 @@ import AppKit
 
 class HeartbeatGridView: ScreenSaverView {
     // MARK: - Initialization
+    let FRAME_RATE: TimeInterval = 1 / 120
+    
     override init?(frame: NSRect, isPreview: Bool) {
         super.init(frame: frame, isPreview: isPreview)
+        animationTimeInterval = FRAME_RATE
     }
     
     @available(*, unavailable)
@@ -20,15 +23,15 @@ class HeartbeatGridView: ScreenSaverView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    var offsetX: CGFloat = 0
-    var offsetY: CGFloat = 0
-    
-    let squareSize: CGFloat = 64
+    // MARK: - Lifecycle
     var gridSize: (width: Int, height: Int)!
     
-    // MARK: - Lifecycle
     override func draw(_ rect: NSRect) {
-        gridSize = (width: Int(rect.width / squareSize) + 2, height: Int(rect.height / squareSize) + 2)
+        let overflow = 2
+        gridSize = (
+            width: Int(rect.width / squareSize) + overflow,
+            height: Int(rect.height / squareSize) + overflow
+        )
         
         drawCheckerboard { [weak self] (origin, isForeground) in
             if (!isForeground) {
@@ -43,14 +46,23 @@ class HeartbeatGridView: ScreenSaverView {
         }
     }
     
+    // MARK: - Animation
+    var offsetX: CGFloat = 0
+    var offsetY: CGFloat = 0
+    
+    let ANIMATION_SPEED: CGFloat = 1
+    
     override func animateOneFrame() {
         super.animateOneFrame()
         
-        offsetX = (offsetX - 1).truncatingRemainder(dividingBy: squareSize)
-        offsetY = (offsetY - 1).truncatingRemainder(dividingBy: squareSize)
+        offsetX = (offsetX - ANIMATION_SPEED).truncatingRemainder(dividingBy: squareSize)
+        offsetY = (offsetY - ANIMATION_SPEED).truncatingRemainder(dividingBy: squareSize)
         
         setNeedsDisplay(bounds)
     }
+    
+    // MARK: - Drawing
+    let squareSize: CGFloat = 128
     
     private func drawSquare(_ origin: NSPoint) {
         let square = NSRect(
@@ -65,21 +77,23 @@ class HeartbeatGridView: ScreenSaverView {
     }
     
     private func drawBezeledSquare(_ origin: NSPoint) -> Void {
-        let overflow: CGFloat = 2
-        let overflowOffset = overflow / 2
+        let inset: CGFloat = squareSize / 32
         
         let square = NSRect(
-            x: origin.x - overflowOffset,
-            y: origin.y - overflowOffset,
-            width: squareSize + overflow,
-            height: squareSize + overflow
+            x: origin.x,
+            y: origin.y,
+            width: squareSize,
+            height: squareSize
+        ).insetBy(
+            dx: -inset,
+            dy: -inset
         )
         
         NSColor.systemCyan.setFill()
         square.fill()
         
-        let bezelSize = squareSize / 16
-        let nwColor: NSColor = .init(white: 0.95, alpha: 0.8)
+        let bezelSize = square.width / 16
+        let nwColor: NSColor = .init(white: 0.95, alpha: 0.6)
         let seColor: NSColor = .systemBlue.withSystemEffect(.pressed).withAlphaComponent(0.9)
         
         func drawBezel(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat, color: NSColor) {
@@ -91,34 +105,34 @@ class HeartbeatGridView: ScreenSaverView {
         
         // Bottom
         drawBezel(
-            x: origin.x - overflowOffset,
-            y: origin.y - overflowOffset,
-            width: squareSize + overflow,
-            height: bezelSize + overflow,
+            x: square.origin.x,
+            y: square.origin.y,
+            width: square.width,
+            height: bezelSize,
             color: seColor
         )
         // Right
         drawBezel(
-            x: origin.x - bezelSize + squareSize - overflowOffset,
-            y: origin.y - overflowOffset,
-            width: bezelSize + overflow,
-            height: squareSize + overflow,
+            x: square.origin.x + square.width - bezelSize,
+            y: square.origin.y,
+            width: bezelSize,
+            height: square.height,
             color: seColor
         )
         // Left
         drawBezel(
-            x: origin.x - overflowOffset,
-            y: origin.y - overflowOffset,
-            width: bezelSize + overflow,
-            height: squareSize + overflow,
+            x: square.origin.x,
+            y: square.origin.y,
+            width: bezelSize,
+            height: square.height,
             color: nwColor
         )
         // Top
         drawBezel(
-            x: origin.x - overflowOffset,
-            y: origin.y - bezelSize + squareSize - overflowOffset,
-            width: squareSize + overflow,
-            height: bezelSize + overflow,
+            x: square.origin.x,
+            y: square.origin.y + square.height - bezelSize,
+            width: square.width,
+            height: bezelSize,
             color: nwColor
         )
     }
