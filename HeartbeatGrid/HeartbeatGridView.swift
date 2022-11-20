@@ -62,7 +62,23 @@ class HeartbeatGridView: ScreenSaverView {
     }
     
     // MARK: - Drawing
-    let squareSize: CGFloat = 128
+    let squareSize: CGFloat = 64
+    let pixelSize: CGFloat = 4
+    
+    private func drawSteppedTriangle(origin pathOrigin: NSPoint, steps: Int, color: NSColor) {
+        let path = NSBezierPath()
+        path.move(to: pathOrigin)
+
+        for _ in 0..<steps {
+            path.relativeLine(to: NSPoint(x: 0, y: pixelSize))
+            path.relativeLine(to: NSPoint(x: pixelSize, y: 0))
+        }
+        
+        path.line(to: NSPoint(x: path.currentPoint.x, y: pathOrigin.y))
+        path.line(to: pathOrigin)
+        color.setFill()
+        path.fill()
+    }
     
     private func drawSquare(_ origin: NSPoint) {
         let square = NSRect(
@@ -74,10 +90,23 @@ class HeartbeatGridView: ScreenSaverView {
         
         NSColor.systemMint.setFill()
         square.fill()
+        
+        let sideUnits = Int(squareSize / pixelSize)
+        drawSteppedTriangle(
+            origin: NSPoint(x: square.minX + pixelSize * 2, y: square.minY),
+            steps: sideUnits - 2,
+            color: .white.withAlphaComponent(0.2)
+        )
+
+        drawSteppedTriangle(
+            origin: NSPoint(x: square.minX + pixelSize * 10, y: square.minY),
+            steps: sideUnits - 10,
+            color: .white.withAlphaComponent(0.2)
+        )
     }
     
     private func drawBezeledSquare(_ origin: NSPoint) -> Void {
-        let inset: CGFloat = squareSize / 32
+        let inset: CGFloat = pixelSize / 2
         
         let square = NSRect(
             x: origin.x,
@@ -92,9 +121,8 @@ class HeartbeatGridView: ScreenSaverView {
         NSColor.systemCyan.setFill()
         square.fill()
         
-        let bezelSize = square.width / 16
-        let nwColor: NSColor = .init(white: 0.95, alpha: 0.6)
-        let seColor: NSColor = .systemBlue.withSystemEffect(.pressed).withAlphaComponent(0.9)
+        let nwColor: NSColor = .white.withAlphaComponent(0.6)
+        let seColor: NSColor = .black.withAlphaComponent(0.2)
         
         func drawBezel(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat, color: NSColor) {
             let bezel = NSRect(x: x, y: y, width: width, height: height)
@@ -108,14 +136,14 @@ class HeartbeatGridView: ScreenSaverView {
             x: square.origin.x,
             y: square.origin.y,
             width: square.width,
-            height: bezelSize,
+            height: pixelSize,
             color: seColor
         )
         // Right
         drawBezel(
-            x: square.origin.x + square.width - bezelSize,
+            x: square.origin.x + square.width - pixelSize,
             y: square.origin.y,
-            width: bezelSize,
+            width: pixelSize,
             height: square.height,
             color: seColor
         )
@@ -123,17 +151,30 @@ class HeartbeatGridView: ScreenSaverView {
         drawBezel(
             x: square.origin.x,
             y: square.origin.y,
-            width: bezelSize,
+            width: pixelSize,
             height: square.height,
             color: nwColor
         )
         // Top
         drawBezel(
             x: square.origin.x,
-            y: square.origin.y + square.height - bezelSize,
+            y: square.origin.y + square.height - pixelSize,
             width: square.width,
-            height: bezelSize,
+            height: pixelSize,
             color: nwColor
+        )
+        
+        let sideUnits = Int(squareSize / pixelSize)
+        drawSteppedTriangle(
+            origin: NSPoint(x: square.minX + pixelSize * 3, y: square.minY + pixelSize),
+            steps: sideUnits - 3,
+            color: .black.withAlphaComponent(0.05)
+        )
+
+        drawSteppedTriangle(
+            origin: NSPoint(x: square.minX + pixelSize * 11, y: square.minY + pixelSize),
+            steps: sideUnits - 11,
+            color: .black.withAlphaComponent(0.05)
         )
     }
     
