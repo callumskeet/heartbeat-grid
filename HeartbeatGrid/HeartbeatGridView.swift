@@ -11,11 +11,10 @@ import AppKit
 
 class HeartbeatGridView: ScreenSaverView {
     // MARK: - Initialization
-    let FRAME_RATE: TimeInterval = 1 / 120
+    let FRAME_RATE: TimeInterval = 1 / 75
     
     override init?(frame: NSRect, isPreview: Bool) {
         super.init(frame: frame, isPreview: isPreview)
-        animationTimeInterval = FRAME_RATE
     }
     
     @available(*, unavailable)
@@ -23,52 +22,48 @@ class HeartbeatGridView: ScreenSaverView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Lifecycle
+    // MARK: - Drawing
+    let gridLayer = CALayer()
+    
     var gridSize: (width: Int, height: Int)!
+    let squareSize: CGFloat = 128
+    let pixelSize: CGFloat = 8
     
     override func draw(_ rect: NSRect) {
-        let overflow = 2
+        let overflow = 3
         gridSize = (
-            width: Int(rect.width / squareSize) + overflow,
-            height: Int(rect.height / squareSize) + overflow
+            width: Int(ceil(rect.width / squareSize)) + overflow,
+            height: Int(ceil(rect.height / squareSize)) + overflow
         )
         
-        drawCheckerboard { [weak self] (origin, isForeground) in
-            if (!isForeground) {
-                self?.drawSquare(origin)
-            }
+        let backgroundGridLayer = createBackgroundGridLayer(invert: true) {
+            let gradient: [CGColor] = [
+                NSColor.systemMint.cgColor,
+                NSColor.white.withAlphaComponent(0.2).cgColor,
+                NSColor.white.withAlphaComponent(0.2).cgColor
+            ]
+            return self.SquareLayer(gradient: gradient)
         }
         
-        drawCheckerboard { [weak self] (origin, isForeground) in
-            if (isForeground) {
-                self?.drawBezeledSquare(origin)
-            }
+        let foregroundGridLayer = createBackgroundGridLayer(invert: false) {
+            let gradient: [CGColor] = [
+                NSColor.systemCyan.cgColor,
+                NSColor.black.withAlphaComponent(0.05).cgColor,
+                NSColor.black.withAlphaComponent(0.05).cgColor
+            ]
+            return self.BezelSquareLayer(gradient: gradient)
         }
+        
+        gridLayer.addSublayer(backgroundGridLayer)
+        gridLayer.addSublayer(foregroundGridLayer)
+        
+        layer?.addSublayer(gridLayer)
     }
     
-    // MARK: - Animation
-    var offsetX: CGFloat = 0
-    var offsetY: CGFloat = 0
-    
-    let ANIMATION_SPEED: CGFloat = 1
-    
-    override func animateOneFrame() {
-        super.animateOneFrame()
-        
-        offsetX = (offsetX - ANIMATION_SPEED).truncatingRemainder(dividingBy: squareSize)
-        offsetY = (offsetY - ANIMATION_SPEED).truncatingRemainder(dividingBy: squareSize)
-        
-        setNeedsDisplay(bounds)
-    }
-    
-    // MARK: - Drawing
-    let squareSize: CGFloat = 64
-    let pixelSize: CGFloat = 4
-    
-    private func drawSteppedTriangle(origin pathOrigin: NSPoint, steps: Int, color: NSColor) {
+    private func SteppedTriangle(origin pathOrigin: NSPoint, steps: Int) -> CGPath {
         let path = NSBezierPath()
         path.move(to: pathOrigin)
-
+        
         for _ in 0..<steps {
             path.relativeLine(to: NSPoint(x: 0, y: pixelSize))
             path.relativeLine(to: NSPoint(x: pixelSize, y: 0))
@@ -76,60 +71,55 @@ class HeartbeatGridView: ScreenSaverView {
         
         path.line(to: NSPoint(x: path.currentPoint.x, y: pathOrigin.y))
         path.line(to: pathOrigin)
-        color.setFill()
-        path.fill()
+        return path.cgPath
     }
     
-    private func drawSquare(_ origin: NSPoint) {
-        let square = NSRect(
-            x: origin.x,
-            y: origin.y,
-            width: squareSize,
-            height: squareSize
-        )
+    func SquareLayer(gradient: [CGColor]) -> CALayer {
+        let squareLayer = CAShapeLayer()
+        squareLayer.path = NSBezierPath(rect: NSRect(x: 0, y: 0, width: squareSize, height: squareSize)).cgPath
+        squareLayer.fillColor = gradient[0]
         
-        NSColor.systemMint.setFill()
-        square.fill()
+        let groupLayer = CALayer()
+        groupLayer.addSublayer(squareLayer)
         
-        let sideUnits = Int(squareSize / pixelSize)
-        drawSteppedTriangle(
-            origin: NSPoint(x: square.minX + pixelSize * 2, y: square.minY),
-            steps: sideUnits - 2,
-            color: .white.withAlphaComponent(0.2)
-        )
-
-        drawSteppedTriangle(
-            origin: NSPoint(x: square.minX + pixelSize * 10, y: square.minY),
-            steps: sideUnits - 10,
-            color: .white.withAlphaComponent(0.2)
-        )
-    }
-    
-    private func drawBezeledSquare(_ origin: NSPoint) -> Void {
-        let inset: CGFloat = pixelSize / 2
-        
-        let square = NSRect(
-            x: origin.x,
-            y: origin.y,
-            width: squareSize,
-            height: squareSize
-        ).insetBy(
-            dx: -inset,
-            dy: -inset
-        )
-        
-        NSColor.systemCyan.setFill()
-        square.fill()
-        
-        let nwColor: NSColor = .white.withAlphaComponent(0.6)
-        let seColor: NSColor = .black.withAlphaComponent(0.2)
-        
-        func drawBezel(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat, color: NSColor) {
-            let bezel = NSRect(x: x, y: y, width: width, height: height)
-            
-            color.setFill()
-            bezel.fill()
+        for (i, offset) in [3, 11].enumerated() {
+            let gradientLayer = CAShapeLayer()
+            let steps = Int(squareSize / pixelSize) - offset
+            gradientLayer.path = SteppedTriangle(origin: NSPoint(x: pixelSize * CGFloat(offset), y: 0), steps: steps)
+            gradientLayer.fillColor = gradient[i + 1]
+            groupLayer.addSublayer(gradientLayer)
         }
+        
+        return groupLayer
+    }
+    
+    func BezelSquareLayer(gradient: [CGColor]) -> CALayer {
+        let squareLayer = CAShapeLayer()
+        let square = NSRect(x: 0, y: 0, width: squareSize, height: squareSize).insetBy(dx: -pixelSize / 2, dy: -pixelSize / 2)
+        squareLayer.path = NSBezierPath(rect: square).cgPath
+        squareLayer.fillColor = gradient[0]
+        
+        let groupLayer = CALayer()
+        groupLayer.addSublayer(squareLayer)
+        
+        for (i, offset) in [3, 11].enumerated() {
+            let gradientLayer = CAShapeLayer()
+            let steps = Int(squareSize / pixelSize) - offset
+            gradientLayer.path = SteppedTriangle(origin: NSPoint(x: square.minX + pixelSize * CGFloat(offset), y: square.minY + pixelSize), steps: steps)
+            gradientLayer.fillColor = gradient[i + 1]
+            groupLayer.addSublayer(gradientLayer)
+        }
+        
+        func drawBezel(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat, color: CGColor) {
+            let bezel = NSRect(x: x, y: y, width: width, height: height)
+            let layer = CAShapeLayer()
+            layer.path = NSBezierPath(rect: bezel).cgPath
+            layer.fillColor = color
+            groupLayer.addSublayer(layer)
+        }
+        
+        let nwColor = NSColor.white.withAlphaComponent(0.6).cgColor
+        let seColor = NSColor.black.withAlphaComponent(0.2).cgColor
         
         // Bottom
         drawBezel(
@@ -164,37 +154,71 @@ class HeartbeatGridView: ScreenSaverView {
             color: nwColor
         )
         
-        let sideUnits = Int(squareSize / pixelSize)
-        drawSteppedTriangle(
-            origin: NSPoint(x: square.minX + pixelSize * 3, y: square.minY + pixelSize),
-            steps: sideUnits - 3,
-            color: .black.withAlphaComponent(0.05)
-        )
-
-        drawSteppedTriangle(
-            origin: NSPoint(x: square.minX + pixelSize * 11, y: square.minY + pixelSize),
-            steps: sideUnits - 11,
-            color: .black.withAlphaComponent(0.05)
-        )
+        return groupLayer
     }
     
-    private func drawCheckerboard(draw: (_ origin: NSPoint, _ isLocationEven: Bool) -> Void) {
-        func getIsLocationEven(_ row: Int, _ col: Int) -> Bool {
-            (row + col).isMultiple(of: 2)
+    func createBackgroundGridLayer(invert: Bool, _ draw: () -> CALayer) -> CAReplicatorLayer {
+        let columnLayer = CAReplicatorLayer()
+        columnLayer.instanceCount = gridSize.width / 2
+        columnLayer.instanceTransform = CATransform3DMakeTranslation(squareSize * 2, 0, 0)
+        
+        let primaryRow = draw()
+        let secondaryRow = draw()
+        if (invert) {
+            primaryRow.position = CGPoint(x: squareSize, y: 0)
+            secondaryRow.position = CGPoint(x: 0, y: squareSize)
+        } else {
+            secondaryRow.position = CGPoint(x: squareSize, y: squareSize)
         }
         
-        func getOrigin(_ row: Int, _ col: Int) -> NSPoint {
-            let x = Double(row) * squareSize
-            let y = Double(col) * squareSize
-            return NSPoint(x: x + offsetX, y: y + offsetY)
-        }
+        columnLayer.addSublayer(primaryRow)
+        columnLayer.addSublayer(secondaryRow)
         
-        for col in 0..<gridSize.width {
-            for row in 0..<gridSize.height {
-                let origin = getOrigin(col, row)
-                let isEven = getIsLocationEven(col, row)
-                draw(origin, isEven)
-            }
-        }
+        let backgroundGridLayer = CAReplicatorLayer()
+        backgroundGridLayer.instanceCount = gridSize.height / 2
+        backgroundGridLayer.instanceTransform = CATransform3DMakeTranslation(0, squareSize * 2, -1)
+        backgroundGridLayer.addSublayer(columnLayer)
+        
+        return backgroundGridLayer
+    }
+    
+    // MARK: - Animation
+    override func startAnimation() {
+        let animation = CABasicAnimation(keyPath: "position")
+        animation.duration = 0.5
+        animation.fromValue = [0, 0]
+        animation.toValue = [-squareSize, -squareSize]
+        animation.repeatCount = .infinity
+        gridLayer.add(animation, forKey: "move")
     }
 }
+
+extension NSBezierPath {
+    
+    var cgPath: CGPath {
+        let path = CGMutablePath()
+        var points = [CGPoint](repeating: .zero, count: 3)
+        for i in 0 ..< self.elementCount {
+            let type = self.element(at: i, associatedPoints: &points)
+            
+            switch type {
+            case .moveTo:
+                path.move(to: points[0])
+                
+            case .lineTo:
+                path.addLine(to: points[0])
+                
+            case .curveTo:
+                path.addCurve(to: points[2], control1: points[0], control2: points[1])
+                
+            case .closePath:
+                path.closeSubpath()
+                
+            @unknown default:
+                break
+            }
+        }
+        return path
+    }
+}
+
