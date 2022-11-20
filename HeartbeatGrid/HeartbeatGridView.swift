@@ -11,8 +11,6 @@ import AppKit
 
 class HeartbeatGridView: ScreenSaverView {
     // MARK: - Initialization
-    let FRAME_RATE: TimeInterval = 1 / 75
-    
     override init?(frame: NSRect, isPreview: Bool) {
         super.init(frame: frame, isPreview: isPreview)
     }
@@ -30,7 +28,7 @@ class HeartbeatGridView: ScreenSaverView {
     let pixelSize: CGFloat = 8
     
     override func draw(_ rect: NSRect) {
-        let overflow = 3
+        let overflow = 2
         gridSize = (
             width: Int(ceil(rect.width / squareSize)) + overflow,
             height: Int(ceil(rect.height / squareSize)) + overflow
