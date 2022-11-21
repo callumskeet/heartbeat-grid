@@ -45,7 +45,7 @@ class HeartbeatGridView: ScreenSaverView {
         
         let foregroundGridLayer = createBackgroundGridLayer(invert: false) {
             let gradient: [CGColor] = [
-                NSColor.systemCyan.cgColor,
+                CGColor(red: 50 / 255, green: 173 / 255, blue: 230 / 255, alpha: 1),
                 NSColor.black.withAlphaComponent(0.05).cgColor,
                 NSColor.black.withAlphaComponent(0.05).cgColor
             ]
