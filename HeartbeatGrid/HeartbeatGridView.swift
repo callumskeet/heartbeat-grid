@@ -34,16 +34,18 @@ class HeartbeatGridView: ScreenSaverView {
             height: Int(ceil(rect.height / squareSize)) + overflow
         )
         
-        let backgroundGridLayer = Grid(invert: true) {
+        let backgroundGridLayer = Grid {
             let gradient: [CGColor] = [
                 NSColor.systemMint.cgColor,
                 NSColor.white.withAlphaComponent(0.2).cgColor,
                 NSColor.white.withAlphaComponent(0.2).cgColor
             ]
-            return self.Square(gradient: gradient)
+            let square = self.Square(gradient: gradient)
+            square.position = CGPoint(x: squareSize, y: 0)
+            return square
         }
         
-        let foregroundGridLayer = Grid(invert: false) {
+        let foregroundGridLayer = Grid {
             let gradient: [CGColor] = [
                 CGColor(red: 50 / 255, green: 173 / 255, blue: 230 / 255, alpha: 1),
                 NSColor.black.withAlphaComponent(0.05).cgColor,
@@ -158,19 +160,20 @@ class HeartbeatGridView: ScreenSaverView {
         return groupLayer
     }
     
-    func Grid(invert: Bool, _ draw: () -> CALayer) -> CAReplicatorLayer {
+    func Grid(_ draw: () -> CALayer) -> CAReplicatorLayer {
         let columnLayer = CAReplicatorLayer()
         columnLayer.instanceCount = gridSize.width / 2
         columnLayer.instanceTransform = CATransform3DMakeTranslation(squareSize * 2, 0, 0)
         
         let primaryRow = draw()
         let secondaryRow = draw()
-        if (invert) {
-            primaryRow.position = CGPoint(x: squareSize, y: 0)
-            secondaryRow.position = CGPoint(x: 0, y: squareSize)
-        } else {
-            secondaryRow.position = CGPoint(x: squareSize, y: squareSize)
+        
+        func reflect(_ x: CGFloat) -> CGFloat {
+            (x + squareSize).truncatingRemainder(dividingBy: squareSize * 2)
         }
+        
+        let position = primaryRow.position
+        secondaryRow.position = CGPoint(x: reflect(position.x), y: reflect(position.y))
         
         columnLayer.addSublayer(primaryRow)
         columnLayer.addSublayer(secondaryRow)
