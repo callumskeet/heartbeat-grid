@@ -36,7 +36,7 @@ class HeartbeatGridView: ScreenSaverView {
         
         let backgroundGridLayer = Grid {
             let gradient: [CGColor] = [
-                NSColor.systemMint.cgColor,
+                NSColor(red: 99, green: 230, blue: 225, alpha: 1).cgColor,
                 NSColor.white.withAlphaComponent(0.2).cgColor,
                 NSColor.white.withAlphaComponent(0.2).cgColor
             ]
@@ -47,7 +47,7 @@ class HeartbeatGridView: ScreenSaverView {
         
         let foregroundGridLayer = Grid {
             let gradient: [CGColor] = [
-                CGColor(red: 50 / 255, green: 173 / 255, blue: 230 / 255, alpha: 1),
+                NSColor(red: 90, green: 200, blue: 245, alpha: 1).cgColor,
                 NSColor.black.withAlphaComponent(0.05).cgColor,
                 NSColor.black.withAlphaComponent(0.05).cgColor
             ]
@@ -223,6 +223,13 @@ extension NSBezierPath {
             }
         }
         return path
+    }
+}
+
+
+extension NSColor {
+    convenience init(red: Int, green: Int, blue: Int, alpha: CGFloat) {
+        self.init(red: CGFloat(red) / 255, green: CGFloat(green) / 255, blue: CGFloat(blue) / 255, alpha: alpha)
     }
 }
 
