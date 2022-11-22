@@ -34,22 +34,22 @@ class HeartbeatGridView: ScreenSaverView {
             height: Int(ceil(rect.height / squareSize)) + overflow
         )
         
-        let backgroundGridLayer = createBackgroundGridLayer(invert: true) {
+        let backgroundGridLayer = Grid(invert: true) {
             let gradient: [CGColor] = [
                 NSColor.systemMint.cgColor,
                 NSColor.white.withAlphaComponent(0.2).cgColor,
                 NSColor.white.withAlphaComponent(0.2).cgColor
             ]
-            return self.SquareLayer(gradient: gradient)
+            return self.Square(gradient: gradient)
         }
         
-        let foregroundGridLayer = createBackgroundGridLayer(invert: false) {
+        let foregroundGridLayer = Grid(invert: false) {
             let gradient: [CGColor] = [
                 CGColor(red: 50 / 255, green: 173 / 255, blue: 230 / 255, alpha: 1),
                 NSColor.black.withAlphaComponent(0.05).cgColor,
                 NSColor.black.withAlphaComponent(0.05).cgColor
             ]
-            return self.BezelSquareLayer(gradient: gradient)
+            return self.BezelSquare(gradient: gradient)
         }
         
         gridLayer.addSublayer(backgroundGridLayer)
@@ -58,8 +58,10 @@ class HeartbeatGridView: ScreenSaverView {
         layer?.addSublayer(gridLayer)
     }
     
-    private func SteppedTriangle(origin pathOrigin: NSPoint, steps: Int) -> CGPath {
+    func SteppedTriangle(origin pathOrigin: NSPoint, steps: Int) -> CAShapeLayer {
+        let layer = CAShapeLayer()
         let path = NSBezierPath()
+
         path.move(to: pathOrigin)
         
         for _ in 0..<steps {
@@ -69,10 +71,13 @@ class HeartbeatGridView: ScreenSaverView {
         
         path.line(to: NSPoint(x: path.currentPoint.x, y: pathOrigin.y))
         path.line(to: pathOrigin)
-        return path.cgPath
+        
+        layer.path = path.cgPath
+        
+        return layer
     }
     
-    func SquareLayer(gradient: [CGColor]) -> CALayer {
+    func Square(gradient: [CGColor]) -> CALayer {
         let squareLayer = CAShapeLayer()
         squareLayer.path = NSBezierPath(rect: NSRect(x: 0, y: 0, width: squareSize, height: squareSize)).cgPath
         squareLayer.fillColor = gradient[0]
@@ -81,9 +86,8 @@ class HeartbeatGridView: ScreenSaverView {
         groupLayer.addSublayer(squareLayer)
         
         for (i, offset) in [3, 11].enumerated() {
-            let gradientLayer = CAShapeLayer()
             let steps = Int(squareSize / pixelSize) - offset
-            gradientLayer.path = SteppedTriangle(origin: NSPoint(x: pixelSize * CGFloat(offset), y: 0), steps: steps)
+            let gradientLayer = SteppedTriangle(origin: NSPoint(x: pixelSize * CGFloat(offset), y: 0), steps: steps)
             gradientLayer.fillColor = gradient[i + 1]
             groupLayer.addSublayer(gradientLayer)
         }
@@ -91,7 +95,7 @@ class HeartbeatGridView: ScreenSaverView {
         return groupLayer
     }
     
-    func BezelSquareLayer(gradient: [CGColor]) -> CALayer {
+    func BezelSquare(gradient: [CGColor]) -> CALayer {
         let squareLayer = CAShapeLayer()
         let square = NSRect(x: 0, y: 0, width: squareSize, height: squareSize).insetBy(dx: -pixelSize / 2, dy: -pixelSize / 2)
         squareLayer.path = NSBezierPath(rect: square).cgPath
@@ -101,14 +105,13 @@ class HeartbeatGridView: ScreenSaverView {
         groupLayer.addSublayer(squareLayer)
         
         for (i, offset) in [3, 11].enumerated() {
-            let gradientLayer = CAShapeLayer()
             let steps = Int(squareSize / pixelSize) - offset
-            gradientLayer.path = SteppedTriangle(origin: NSPoint(x: square.minX + pixelSize * CGFloat(offset), y: square.minY + pixelSize), steps: steps)
+            let gradientLayer = SteppedTriangle(origin: NSPoint(x: square.minX + pixelSize * CGFloat(offset), y: square.minY + pixelSize), steps: steps)
             gradientLayer.fillColor = gradient[i + 1]
             groupLayer.addSublayer(gradientLayer)
         }
         
-        func drawBezel(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat, color: CGColor) {
+        func addBezel(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat, color: CGColor) {
             let bezel = NSRect(x: x, y: y, width: width, height: height)
             let layer = CAShapeLayer()
             layer.path = NSBezierPath(rect: bezel).cgPath
@@ -120,7 +123,7 @@ class HeartbeatGridView: ScreenSaverView {
         let seColor = NSColor.black.withAlphaComponent(0.2).cgColor
         
         // Bottom
-        drawBezel(
+        addBezel(
             x: square.origin.x,
             y: square.origin.y,
             width: square.width,
@@ -128,7 +131,7 @@ class HeartbeatGridView: ScreenSaverView {
             color: seColor
         )
         // Right
-        drawBezel(
+        addBezel(
             x: square.origin.x + square.width - pixelSize,
             y: square.origin.y,
             width: pixelSize,
@@ -136,7 +139,7 @@ class HeartbeatGridView: ScreenSaverView {
             color: seColor
         )
         // Left
-        drawBezel(
+        addBezel(
             x: square.origin.x,
             y: square.origin.y,
             width: pixelSize,
@@ -144,7 +147,7 @@ class HeartbeatGridView: ScreenSaverView {
             color: nwColor
         )
         // Top
-        drawBezel(
+        addBezel(
             x: square.origin.x,
             y: square.origin.y + square.height - pixelSize,
             width: square.width,
@@ -155,7 +158,7 @@ class HeartbeatGridView: ScreenSaverView {
         return groupLayer
     }
     
-    func createBackgroundGridLayer(invert: Bool, _ draw: () -> CALayer) -> CAReplicatorLayer {
+    func Grid(invert: Bool, _ draw: () -> CALayer) -> CAReplicatorLayer {
         let columnLayer = CAReplicatorLayer()
         columnLayer.instanceCount = gridSize.width / 2
         columnLayer.instanceTransform = CATransform3DMakeTranslation(squareSize * 2, 0, 0)
